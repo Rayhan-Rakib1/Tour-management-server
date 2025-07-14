@@ -2,15 +2,15 @@
 import { IncomingMessage, Server, ServerResponse } from "http";
 import mongoose from "mongoose";
 import { app } from "./app";
-import envVars from "./app/confiq/env";
+import { envVars } from "./app/config/env";
+import { seedSuperAdmin } from "./app/utils/seed.super.admin";
 
 let server: Server<typeof IncomingMessage, typeof ServerResponse>;
 
 async function serverStart() {
-  console.log(envVars.NODE_ENV);
   try {
     await mongoose.connect(
-      "mongodb+srv://rayhan:rayhan@cluster0.cfb3mbc.mongodb.net/BooksCollection?retryWrites=true&w=majority&appName=Cluster0"
+      "mongodb+srv://Rakib:Rakib@cluster0.cfb3mbc.mongodb.net/Tour-management-collections?retryWrites=true&w=majority&appName=Cluster0"
     );
     server = app.listen(envVars.PORT, () => {
       console.log(`server is running on port: ${envVars.PORT}`);
@@ -20,7 +20,11 @@ async function serverStart() {
   }
 }
 
-serverStart();
+(async() => {
+  await serverStart();
+  await seedSuperAdmin();
+})()
+
 
 // unHandled Rejection error
 // process.on('unhandledRejection', (err) => {
