@@ -4,6 +4,7 @@ import AppError from "../ErrorHandlers/AppError";
 import { User } from "../modules/User/user.model";
 import bcrypt from "bcryptjs";
 import { IAuthProvider, IUser, Role } from "../modules/User/user.interface";
+import { Types } from "mongoose";
 
 export const seedSuperAdmin = async () => {
   try {
@@ -26,12 +27,13 @@ export const seedSuperAdmin = async () => {
     };
 
     const payload: IUser = {
+        _id: new Types.ObjectId(),
       name: "super admin",
       role: Role.SUPER_ADMIN,
       email: envVars.SUPER_ADMIN_EMAIL,
       password: hashPassword,
       isVerified: true,
-      auths: [authProvider],
+      auths: [authProvider]
     };
 
     const superAdmin = await User.create(payload);
