@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
@@ -9,29 +10,37 @@ import AppError from "../../ErrorHandlers/AppError";
 import { createToken } from "../../utils/userTokens";
 import { IUser } from "../User/user.interface";
 import { envVars } from "../../config/env";
+import passport from "passport";
 
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const loginInfo = await authService.credentialLogin(req.body);
 
-    // res.cookie("accessToken", loginInfo.accessToken, {
-    //   httpOnly: true,
-    //   secure: false,
-    // });
-    // res.cookie("refreshToken", loginInfo.refreshToken, {
-    //   httpOnly: true,
-    //   secure: false,
-    // });
+    passport.authenticate('local', async(err: any, user: any, info: any) => {
+      if(err){
+        return next(new AppError(401, err))
+      }
 
-  setAuthCookie(res, loginInfo)
+      if(!user){
+        return next(new AppError(401, err.message))
+      }
 
+      const userTokens  = await createToken(user);
 
-    sendResponse(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: "User login successfully",
-      data: loginInfo,
-    });
+      setAuthCookie(res, userTokens)
+
+      const {password: pass, ...rest} = user.toObject();
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'user login successfully',
+        data: {
+          accessToken: userTokens.accessToken,
+          refreshToken: userTokens.refreshToken,
+          data: rest
+        }
+      })
+    })(req, res, next)
   }
 );
 
@@ -39,9 +48,9 @@ const credentialLogin = catchAsync(
 const getNewAccessToken = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const refreshToken = req.cookies.refreshToken;
-    const tokenInfo = await authService.getNewAccessToken(refreshToken );
+    const tokenInfo = await authService.getNewAccessToken(refreshToken);
 
-    setAuthCookie(res, tokenInfo)
+    setAuthCookie(res, tokenInfo);
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
@@ -52,61 +61,70 @@ const getNewAccessToken = catchAsync(
 );
 
 // ---------------------------------------------------------
-const userLogout = catchAsync(async(req: Request, res: Response, next: NextFunction)=> {
+const userLogout = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
 
-  res.clearCookie("accessToken", {httpOnly: true, secure: false, sameSite: 'lax'})
-  res.clearCookie("refreshToken", {httpOnly: true, secure: false, sameSite: 'lax'})
-
-   sendResponse(res, {
+    sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
       message: "User logout successfully",
       data: null,
     });
-}) ;
+  }
+);
 
 // ---------------------------------------------------------------------
-const resetPassword = catchAsync(async(req: Request, res: Response, next: NextFunction)=> {
+const resetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const oldPassword = req.body.oldPassword;
+    const newPassword = req.body.newPassword;
+    const decodedToken = req.user;
 
-  const oldPassword = req.body.oldPassword;
-  const newPassword = req.body.newPassword;
-  const decodedToken = req.user;
+    await authService.resetPassword(oldPassword, newPassword, decodedToken);
 
- await authService.resetPassword(oldPassword, newPassword, decodedToken)
-
-   sendResponse(res, {
+    sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
       message: "Change password successfully",
       data: null,
     });
-}) 
+  }
+);
 
 // -------------------------------------------------------------------
-const googleCallback = catchAsync(async(req: Request, res: Response, next: NextFunction)=> {
-  let redirectTo = req.query.state ? req.query.state as string : '';
-  if(redirectTo.startsWith("/")){
-    redirectTo  = redirectTo.slice(1)
+const googleCallback = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    let redirectTo = req.query.state ? (req.query.state as string) : "";
+    if (redirectTo.startsWith("/")) {
+      redirectTo = redirectTo.slice(1);
+    }
+
+    const user = req.user as IUser;
+    if (!user) {
+      throw new AppError(StatusCodes.BAD_REQUEST, "User not found");
+    }
+
+    const tokenInfo = createToken(user);
+    setAuthCookie(res, tokenInfo);
+
+    res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
   }
-
-  const user = req.user as IUser;
-  if(!user){
-    throw new AppError(StatusCodes.BAD_REQUEST, "User not found")
-  }
-
-  const tokenInfo = createToken(user);
-  setAuthCookie(res, tokenInfo);
-
-  res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`)
-  
-}) 
-
-
+);
 
 export const authController = {
   credentialLogin,
   getNewAccessToken,
-  userLogout, 
+  userLogout,
   resetPassword,
-  googleCallback
+  googleCallback,
 };
