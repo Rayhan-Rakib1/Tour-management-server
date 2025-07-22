@@ -5,6 +5,8 @@ import httpStatus, { StatusCodes } from "http-status-codes";
 import bcrypt from "bcryptjs";
 import { envVars } from "../../config/env";
 import { JwtPayload } from "jsonwebtoken";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { userSearchableFields } from "./user.constant";
 
 const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
@@ -53,29 +55,45 @@ const updateUser = async (
     }
   }
 
-  if(payload.isActivated || payload.isDeleted || payload.isVerified){
-    if(decodedToken.role === Role.USER || decodedToken.role === Role.GUIDES){
-      throw new AppError(StatusCodes.FORBIDDEN, 'You are not authorized')
+  if (payload.isActivated || payload.isDeleted || payload.isVerified) {
+    if (decodedToken.role === Role.USER || decodedToken.role === Role.GUIDES) {
+      throw new AppError(StatusCodes.FORBIDDEN, "You are not authorized");
     }
   }
 
-  if(payload.password){
-    payload.password =  await bcrypt.hash(payload.password, envVars.BCRYPT_SALT_ROUND)
+  if (payload.password) {
+    payload.password = await bcrypt.hash(
+      payload.password,
+      envVars.BCRYPT_SALT_ROUND
+    );
   }
 
-  const updatedUser  = await User.findByIdAndUpdate(userId, payload, {new: true, runValidators: true});
-  return updatedUser
+  const updatedUser = await User.findByIdAndUpdate(userId, payload, {
+    new: true,
+    runValidators: true,
+  });
+  return updatedUser;
 };
 
-const getAllUsers = async () => {
-  const users = await User.find({});
-  const totalUsers = await User.countDocuments();
-  return {
-    data: users,
-    meta: {
-      total: totalUsers,
-    },
-  };
+const getAllUsers = async (query: Record<string, string>) => {
+
+    const queryBuilder = new QueryBuilder(User.find(), query)
+    const usersData = queryBuilder
+        .filter()
+        .search(userSearchableFields)
+        .sort()
+        .fields()
+        .paginate();
+
+    const [data, meta] = await Promise.all([
+        usersData.build(),
+        queryBuilder.getMeta()
+    ])
+
+    return {
+        data,
+        meta
+    }
 };
 
 export const userServices = {

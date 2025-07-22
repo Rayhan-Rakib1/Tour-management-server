@@ -42,18 +42,24 @@ const updateUser = catchAsync(
   }
 );
 
-const getAllUsers = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const result = await userServices.getAllUsers();
+
+const getAllUsers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const query = req.query;
+    const result = await userServices.getAllUsers(query as Record<string, string>);
+
+    // res.status(httpStatus.OK).json({
+    //     success: true,
+    //     message: "All Users Retrieved Successfully",
+    //     data: users
+    // })
     sendResponse(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: "All users fetched successfully",
-      data: result.data,
-      meta: result.meta,
-    });
-  }
-);
+        success: true,
+        statusCode: StatusCodes.CREATED,
+        message: "All Users Retrieved Successfully",
+        data: result.data,
+        meta: result.meta
+    })
+})
 
 export const userController = {
   createUser,

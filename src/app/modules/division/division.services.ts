@@ -1,6 +1,8 @@
 import { Division } from "./division.model";
 import { Error } from "mongoose";
 import { IDivision } from "./division.interface";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { divisionSearchableFields } from "./division.constant";
 
 const createDivision = async (payload: IDivision) => {
   const isDivisionExist = await Division.findOne({ name: payload.name });
@@ -12,15 +14,27 @@ const createDivision = async (payload: IDivision) => {
   return division;
 };
 
-const getAllDivision = async () => {
-  const divisions = await Division.find();
-  const divisionCount = await Division.countDocuments();
-  return {
-    data: divisions,
-    meta: {
-      total: divisionCount,
-    },
-  };
+
+const getAllDivisions = async (query: Record<string, string>) => {
+
+    const queryBuilder = new QueryBuilder(Division.find(), query)
+
+    const divisionsData = queryBuilder
+        .search(divisionSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate()
+
+    const [data, meta] = await Promise.all([
+        divisionsData.build(),
+        queryBuilder.getMeta()
+    ])
+
+    return {
+        data,
+        meta
+    }
 };
 
 const getSingleDivision = async (slug: string) => {
@@ -59,7 +73,7 @@ const deleteDivision = async (id: string) => {
 
 export const divisionServices = {
   createDivision,
-  getAllDivision,
+  getAllDivisions,
   getSingleDivision,
   updateDivision,
   deleteDivision,
