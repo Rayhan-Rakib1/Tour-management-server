@@ -14,33 +14,34 @@ import passport from "passport";
 
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-
-    passport.authenticate('local', async(err: any, user: any, info: any) => {
-      if(err){
-        return next(new AppError(401, err))
+    passport.authenticate("local", async (err: any, user: any, info: any) => {
+      if (err) {
+        return next(new AppError(401, err));
       }
 
-      if(!user){
-        return next(new AppError(401, err.message))
+      if (!user) {
+        return next(
+          new AppError(401, info?.message || "Authentication failed")
+        );
       }
 
-      const userTokens  = await createToken(user);
+      const userTokens = await createToken(user);
 
-      setAuthCookie(res, userTokens)
+      setAuthCookie(res, userTokens);
 
-      const {password: pass, ...rest} = user.toObject();
+      const { password: pass, ...rest } = user.toObject();
 
       sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
-        message: 'user login successfully',
+        message: "user login successfully",
         data: {
           accessToken: userTokens.accessToken,
           refreshToken: userTokens.refreshToken,
-          data: rest
-        }
-      })
-    })(req, res, next)
+          data: rest,
+        },
+      });
+    })(req, res, next);
   }
 );
 
