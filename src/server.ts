@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { IncomingMessage, Server, ServerResponse } from "http";
 import mongoose from "mongoose";
 import { app } from "./app";

@@ -5,10 +5,10 @@ import { NextFunction, Request, Response } from "express";
 import { envVars } from "../config/env";
 import AppError from "../ErrorHandlers/AppError";
 import { handleCastError } from "../helpers/handleCastError";
-import { handleDuplicateError } from "../helpers/handleDuplicateError";
 import { handlerZodError } from "../helpers/handlerZodError";
 import { TErrorSources } from "../interfaces/error.types";
 import { handleValidationError } from "../helpers/handlerValidationError";
+import { handlerDuplicateError } from "../helpers/handleDuplicateError";
 
 export const globalErrorHandler = (
   err: any,
@@ -24,7 +24,7 @@ export const globalErrorHandler = (
 
   let errorSources: any = [];
   if (err.code === 11000) {
-    const simplifiedError = handleDuplicateError(err);
+    const simplifiedError = handlerDuplicateError(err);
     message = simplifiedError.message;
     statusCode = simplifiedError.statusCode;
   } else if (err.name === "CastError") {
