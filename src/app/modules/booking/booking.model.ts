@@ -32,4 +32,4 @@ const bookingSchema = new Schema<IBooking>(
   }
 );
 
-export const booking = model<IBooking>("Booking", bookingSchema);
+export const Booking = model<IBooking>("Booking", bookingSchema);

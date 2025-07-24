@@ -18,9 +18,10 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true },
     password: { type: String },
     phone: { type: String },
+    address: { type: String },
     picture: { type: String },
     isDeleted: { type: Boolean, default: false },
-    isActivated: {
+    isActive: {
       type: String,
       enum: Object.values(IsActivated),
       default: IsActivated.ACTIVE,
@@ -28,7 +29,6 @@ const userSchema = new Schema<IUser>(
     isVerified: { type: Boolean, default: false },
     role: { type: String, enum: Object.values(Role), default: Role.USER },
     auths: [authSchema],
-    booking: { type: String },
   },
   {
     versionKey: false,

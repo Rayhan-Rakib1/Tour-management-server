@@ -16,19 +16,19 @@ export enum Role {
   USER = "USER",
   GUIDES = "GUIDES",
 }
-
 export interface IUser {
-  _id: Types.ObjectId;
-  name: string;
-  email: string;
-  password?: string;
-  phone?: string;
-  picture?: string;
-  isDeleted?: boolean;
-  isActivated?: IsActivated;
-  isVerified?: boolean;
-  role: Role;
-  auths: IAuthProvider[];
-  booking?: Types.ObjectId[];
-  guides?: Types.ObjectId[];
+    _id?: Types.ObjectId
+    name: string;
+    email: string;
+    password?: string;
+    phone?: string;
+    picture?: string;
+    address?: string;
+    isDeleted?: string;
+    isActive?: IsActivated;
+    isVerified?: boolean;
+    role: Role;
+    auths: IAuthProvider[]
+    bookings?: Types.ObjectId[]
+    guides?: Types.ObjectId[]
 }
