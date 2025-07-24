@@ -3,17 +3,17 @@ import { checkAuth } from "../../middleware/check.auth";
 import { Role } from "../User/user.interface";
 import { validationRequest } from "../../middleware/validation.request";
 import { createDivisionSchema, updateDivisionSchema } from "./division.validation";
-import { divisionController } from "./division.controller";
+import { DivisionController } from "./division.controller";
 
 const router = Router();
 
 
 // division routes
-router.post('/create', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), validationRequest(createDivisionSchema), divisionController.createDivision);
+router.post('/create', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), validationRequest(createDivisionSchema), DivisionController.createDivision);
 
-router.get('/', divisionController.getAllDivision);
-router.get('/:slug', divisionController.getSingleDivision);
-router.patch('/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), validationRequest(updateDivisionSchema),divisionController.updatedDivision);
-router.delete('/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), divisionController.deleteDivision)
+router.get('/', DivisionController.getAllDivisions);
+router.get('/:slug', DivisionController.getSingleDivision);
+router.patch('/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), validationRequest(updateDivisionSchema),DivisionController.updateDivision);
+router.delete('/:id', checkAuth(Role.ADMIN, Role.SUPER_ADMIN), DivisionController.deleteDivision)
 
 export const divisionRoutes = router;
