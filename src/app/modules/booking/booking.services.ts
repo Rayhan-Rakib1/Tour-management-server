@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from "http-status-codes";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
 import { Payment } from "../payment/payment.model";
@@ -7,6 +8,8 @@ import { Booking } from "./booking.model";
 import { User } from "../User/user.model";
 import AppError from "../../ErrorHandlers/AppError";
 import { Tour } from "../Tour/tour.model";
+import { sslCommerzServices } from "../sslCommerz/sslCommerz.services";
+import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
 
 const getTransactionId = () => {
     return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`
@@ -62,11 +65,30 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
             .populate("user", "name email phone address")
             .populate("tour", "title costFrom")
             .populate("payment");
+const UserAddress = (updatedBooking?.user as any).address;
+const userEmail = (updatedBooking?.user as any).email;
+const userPhoneNumber = (updatedBooking?.user as any).phone;
+const userName = (updatedBooking?.user as any).name;
+
+
+            const sslPayload : ISSLCommerz= {
+                address : UserAddress,
+                email: userEmail,
+                phoneNumber: userPhoneNumber,
+                name: userName,
+                transactionId,
+                amount
+            }
+
+            const sslPayment = await sslCommerzServices.sslPaymentInit(sslPayload)
 
 
         await session.commitTransaction(); //transaction
         session.endSession()
-        return updatedBooking
+        return {
+            payment: sslPayment,
+            booking: updatedBooking
+        }
     } catch (error) {
         await session.abortTransaction(); // rollback
         session.endSession()
@@ -81,7 +103,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
 
 const getUserBookings = async () => {
 
-    return {}
+    return {} 
 };
 
 const getBookingById = async () => {
