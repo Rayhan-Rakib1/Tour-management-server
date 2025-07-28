@@ -11,6 +11,9 @@ import { envVars } from "./app/config/env";
 
 export const app: Application = express();
 
+
+
+
 app.use(
   expressSession({
     secret: envVars.EXPRESS_SESSION_SECRET,
