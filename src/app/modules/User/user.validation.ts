@@ -45,7 +45,7 @@ export const updateUserZodSchema = z.object({
   name: z
     .string({ invalid_type_error: "Name must be a string" })
     .min(2, { message: "Name must be at least 2 characters long" })
-    .max(20, { message: "Name cannot be more than 20 characters long" }),
+    .max(20, { message: "Name cannot be more than 20 characters long" }).optional(),
 
   password: z
     .string({ invalid_type_error: "Password must be a string" })
@@ -58,7 +58,7 @@ export const updateUserZodSchema = z.object({
     })
     .regex(/[^A-Za-z0-9]/, {
       message: "Password must include at least one special character",
-    }),
+    }).optional(),
 
   phone: z
     .string({ invalid_type_error: "Phone number must be a string" })
