@@ -8,7 +8,9 @@ export const generateToken = (payload: JwtPayload, secret: string, expiresIn: st
 }
 
 export const verifyToken = (token: string, secret: string) => {
-    const verifyToken = jwt.verify(token, secret);
-
-    return verifyToken
+    const decoded = jwt.verify(token, secret);
+   if (typeof decoded === "string") {
+        throw new Error("Invalid token payload type");
+    }
+    return decoded as JwtPayload
 }

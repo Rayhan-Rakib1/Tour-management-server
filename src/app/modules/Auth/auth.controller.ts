@@ -11,6 +11,7 @@ import { createToken } from "../../utils/userTokens";
 import { IUser } from "../User/user.interface";
 import { envVars } from "../../config/env";
 import passport from "passport";
+import { JwtPayload } from "jsonwebtoken";
 
 const credentialLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -87,11 +88,9 @@ const userLogout = catchAsync(
 // ---------------------------------------------------------------------
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const oldPassword = req.body.oldPassword;
-    const newPassword = req.body.newPassword;
     const decodedToken = req.user;
 
-    await authService.resetPassword(oldPassword, newPassword, decodedToken);
+    await authService.resetPassword(decodedToken, req.body);
 
     sendResponse(res, {
       success: true,
@@ -101,6 +100,49 @@ const resetPassword = catchAsync(
     });
   }
 );
+const setPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const decodedToken = req.user;
+    const { password } = req.body;
+
+    await authService.setPassword(decodedToken.userId, password);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "set password successfully",
+      data: null,
+    });
+  }
+);
+
+const changePassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const oldPassword = req.body.oldPassword;
+    const newPassword = req.body.newPassword;
+    const decodedToken = req.user as JwtPayload;
+
+    await authService.changePassword(oldPassword, newPassword, decodedToken);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Change password successfully",
+      data: null,
+    });
+  }
+);
+
+const forgetPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  await authService.forgetPassword(email);
+  sendResponse(res, {
+    success: true,
+    message: "Email send successfully",
+    statusCode: StatusCodes.OK,
+    data: null,
+  });
+});
 
 // -------------------------------------------------------------------
 const googleCallback = catchAsync(
@@ -127,5 +169,8 @@ export const authController = {
   getNewAccessToken,
   userLogout,
   resetPassword,
+  setPassword,
+  forgetPassword,
+  changePassword,
   googleCallback,
 };

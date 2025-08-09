@@ -7,9 +7,7 @@ import { User } from "../modules/User/user.model";
 import { StatusCodes } from "http-status-codes";
 import { IsActivated } from "../modules/User/user.interface";
 
-export const checkAuth =
-  (...authRoles: string[]) =>
-  async (req: Request, res: Response, next: NextFunction) => {
+export const checkAuth =(...authRoles: string[]) => async (req: Request, res: Response, next: NextFunction) => {
     try {
       const accessToken = req.headers.authorization;
       if (!accessToken) {
@@ -25,11 +23,8 @@ export const checkAuth =
       if (!isUserExist) {
         throw new AppError(StatusCodes.BAD_REQUEST, "User dose not exist");
       }
-      if (
-        isUserExist.isActivated === IsActivated.BLOCKED ||
-        isUserExist.isActivated === IsActivated.INACTIVE
-      ) {
-        throw new AppError(
+      if (isUserExist.isActivated === IsActivated.BLOCKED ||  isUserExist.isActivated === IsActivated.INACTIVE ) 
+        {throw new AppError(
           StatusCodes.BAD_REQUEST,
           `User is ${isUserExist.isActivated}`
         );

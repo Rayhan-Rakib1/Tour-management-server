@@ -27,19 +27,17 @@ export const seedSuperAdmin = async () => {
     };
 
     const payload: IUser = {
-        _id: new Types.ObjectId(),
+      _id: new Types.ObjectId(),
       name: "super admin",
       role: Role.SUPER_ADMIN,
       email: envVars.SUPER_ADMIN_EMAIL,
       password: hashPassword,
       isVerified: true,
-      auths: [authProvider]
+      auths: [authProvider],
     };
 
-    const superAdmin = await User.create(payload);
-
-    console.log(superAdmin);
+    await User.create(payload);
   } catch (error) {
-   console.log(error);
+    console.log(error);
   }
 };
