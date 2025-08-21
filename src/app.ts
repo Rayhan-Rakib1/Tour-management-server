@@ -8,7 +8,7 @@ import passport from "passport";
 import expressSession from "express-session";
 import "./app/config/passport"
 import { envVars } from "./app/config/env";
-
+// Express Entry Point
 export const app: Application = express();
 
 app.use(
